@@ -1,0 +1,7 @@
+{
+  "name": "CRC_Associates_LLP",
+  "integrations": {
+    "capacitor": {}
+  },
+  "type": "react-vite"
+}
