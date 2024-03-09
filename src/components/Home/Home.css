@@ -1,0 +1,34 @@
+/** Home.css **/
+
+
+
+/** HomeAppointmentsList.tsx **/
+.skeleton-item {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.event-details {
+  display: flex;
+  flex-direction: column;
+}
+
+.event-title {
+  font-weight: bold;
+  font-size: 1.2rem;
+  margin-bottom: 5%;
+  margin-top: 5%;
+}
+
+.event-time,
+.event-date,
+.event-location,
+.event-description {
+  font-size: smaller;
+}
+
+.attachments {
+  color: primary;
+  font-size: smaller;
+}
