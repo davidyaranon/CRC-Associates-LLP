@@ -18,7 +18,7 @@ import '@ionic/react/css/display.css';
 import './theme/variables.css';
 import './App.css';
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 
 import { GoogleAuth } from '@codetrix-studio/capacitor-google-auth';
 import Login from './pages/Login';
@@ -101,17 +101,21 @@ const RoutingSystem = () => {
 
 const App: React.FC = () => {
 
-  useEffect(() => {
-    const handleInitGoogleAuth = async () => {
-      await GoogleAuth.initialize({
-        clientId: '42203963600-gdvmohrf4jh24vmqtmf3qd6ku97n5l5i.apps.googleusercontent.com',
-        scopes: ['profile', 'email'],
-        grantOfflineAccess: true,
-      });
-    };
-
-    handleInitGoogleAuth();
+  const handleInitGoogleAuth = useCallback(async () => {
+    await GoogleAuth.initialize({
+      clientId: '42203963600-gdvmohrf4jh24vmqtmf3qd6ku97n5l5i.apps.googleusercontent.com',
+      scopes: ['profile', 'email'],
+      grantOfflineAccess: true,
+    }).then(() => {
+      console.log('init');
+    }).catch((err) => {
+      console.error(err);
+    });
   }, []);
+
+  useEffect(() => {
+    handleInitGoogleAuth();
+  }, [handleInitGoogleAuth]);
 
   return (
     <IonApp>

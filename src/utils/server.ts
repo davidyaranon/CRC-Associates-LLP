@@ -10,8 +10,11 @@ import {
   signOut, GoogleAuthProvider, User, UserCredential,
 } from "firebase/auth";
 import {
-  doc, getDoc, getFirestore, setDoc, updateDoc, DocumentReference, FirestoreError
+  runTransaction, doc, getDoc, getFirestore, setDoc, updateDoc, DocumentReference, FirestoreError, arrayUnion
 } from "firebase/firestore";
+import { ref, uploadBytes, getDownloadURL, getStorage, deleteObject, StorageReference } from 'firebase/storage';
+import { uuidv4 } from "@firebase/util";
+
 
 const firebaseConfig = {
   apiKey: "AIzaSyDAM5W2QFtFUczQ0tDJi4m3HEOH0Bdg59s",
@@ -25,6 +28,7 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
+const storage = getStorage();
 const analytics = getAnalytics(app);
 const FirebaseAuth = Capacitor.isNativePlatform() ?
   initializeAuth(app, {
@@ -37,11 +41,13 @@ import { GoogleAuth, User as CapacitorGoogleUser } from "@codetrix-studio/capaci
 import { Capacitor } from "@capacitor/core";
 import { getFunctions, httpsCallable } from 'firebase/functions';
 import { Preferences } from "@capacitor/preferences";
-import { CalendarEvent } from "./types";
+import { AppointmentInfo, CalendarEvent } from "./types";
 
 const functions = getFunctions();
 const fetchCalendarEvents = httpsCallable(functions, 'fetchCalendarEvents');
-const syncCalendarEventsWithDb = httpsCallable(functions, 'syncCalendarEventsWithDb');
+const fetchAppointmentInfo = httpsCallable(functions, 'fetchAppointmentInfo');
+const fetchPastCalendarEvents = httpsCallable(functions, 'fetchPastCalendarEvents');
+const syncCalendarEventWithDb = httpsCallable(functions, 'syncCalendarEventWithDb');
 
 
 
@@ -124,7 +130,7 @@ export const googleAuthLogout = async (): Promise<boolean> => {
  * @function getGoogleCalendarEvents 
  * @description fetches the events from the user's Google Calendar, starting from today's date.
  * 
- * @param {string} email 
+ * @param {string} email the user's email, used as the calendar ID.
  * @return {Promise<CalendarEvent[]>} the list of events on the person's Google Calendar.
  */
 export const getGoogleCalendarEvents = async (email: string): Promise<CalendarEvent[]> => {
@@ -141,47 +147,114 @@ export const getGoogleCalendarEvents = async (email: string): Promise<CalendarEv
 
 
 /**
+ * @function getPastGoogleCalendarEvents 
+ * @description fetches the past events from the user's Google Calendar, starting from yesterday and going backwards in time.
+ * 
+ * @param {string} email the user's emai, used as the calendar ID.
+ * @returns {Promise<{ events: CalendarEvent[], nextPageToken: string | null }>} the event list and a token for the next page.
+ */
+export const getPastGoogleCalendarEvents = async (email: string, nextPageToken: string | null = null): Promise<{ events: CalendarEvent[], nextPageToken: string | null }> => {
+  try {
+    const result = await fetchPastCalendarEvents({ email, nextPageToken });
+    const events: { events: CalendarEvent[], nextPageToken: string | null } = result.data as { events: CalendarEvent[], nextPageToken: string | null }
+    console.log(events);
+    return events;
+  } catch (error) {
+    console.error('Error fetching calendar events!', error);
+    return { events: [], nextPageToken: null };
+  }
+};
+
+
+
+/**
  * @function getAppointmentInfo
  * @description gets the information about the certain appointment at /users/{uid}/appointments/{appointmentId},
  * or if it doesn't exist, return null.
  * 
  * @param {string} uid the user's UID
  * @param {string} appointmentId the id of the calendar event
+ * @returns {Promise<AppointmentInfo | null>} the appointment info or null if the ID does not exist in the DB.
  */
-export const getAppointmentInfo = async (uid: string, appointmentId: string) => {
+export const getAppointmentInfo = async (uid: string, appointmentId: string): Promise<AppointmentInfo | null> => {
   try {
-    const docRef = doc(db, `users/${uid}/appointments`, appointmentId);
-    const docSnap = await getDoc(docRef);
-
-    if (docSnap.exists()) {
-      console.log(docSnap.data());
-      return docSnap.data();
-    } else {
-      return null;
-    }
-  } catch (error) {
-    if (error instanceof FirestoreError) {
-      console.error("Firestore error:", error.message);
-    } else {
-      console.error("Unexpected error:", error);
-    }
+    const res = await fetchAppointmentInfo({ uid, appointmentId })
+    console.log(res.data);
+    return res.data as AppointmentInfo | null;
+  } catch (err) {
+    console.error(err);
     return null;
   }
 };
 
 
+
 /**
+ * @function syncEventWithDb 
+ * @description called when the database does not have a Document relating to the Google Calendar event.
+ * Syncs the information from the event to the Firestore database.
  * 
- * @param email 
- * @param uid 
- * @returns 
+ * @param {string} email the user's email, used as the calendar ID.
+ * @param {string} uid the user's UID
+ * @param {string} appointmentId the ID of the Google Calendar appointment, used as doc ID.
+ * @returns {boolean} true if the database sync is successful, false otherwise
  */
-export const syncEventsWithDb = async (email: string | null, uid: string) => {
+export const syncEventWithDb = async (email: string | null, uid: string, appointmentId: string): Promise<boolean> => {
   try {
-    await syncCalendarEventsWithDb({ email, uid });
+    const res = await syncCalendarEventWithDb({ email, uid, appointmentId });
+    console.info(res);
     return true;
   } catch (err) {
     console.error(err);
     return false;
   }
-}
+};
+
+
+/**
+ * @function deleteStorageRef
+ * @description helper function to delete the storage reference in case of a failure in photo uploads.
+ * 
+ * @param ref 
+ */
+const deleteStorageRef = async (ref: StorageReference) => {
+  try {
+    await deleteObject(ref);
+    console.log(`Deleted file at ${ref.fullPath}`);
+  } catch (error) {
+    console.error(`Failed to delete file at ${ref.fullPath}:`, error);
+    // Handle any errors here, such as logging them or re-throwing them
+    throw error;
+  }
+};
+
+
+/**
+ * @function handleAddImagesToAppointment
+ * @description adds photos to Firebase storage at /{uid}/appointments/{appointmentId{
+ * and appends to the photoUrls document field in the Firestore DB at /users/{uid}/appointments/{appointmentId}
+ * 
+ * @param {Blob[]} blobArr the array of photo data
+ * @param {string} uid
+ * @param {stirng} appointmentId
+ */
+export const handleAddImagesToAppointment = async (blobArr: Blob[], uid: string | undefined, appointmentId: string) => {
+  const appointmentRef = doc(db, `users/${uid}/appointments/${appointmentId}`);
+  try {
+    if (!uid) throw new Error('User not authenticated!');
+    for (let i = 0; i < blobArr.length; i++) {
+      const blob: Blob = blobArr[i];
+      const photoId: string = uuidv4();
+      const imageRef = ref(storage, `${uid}/appointments/${appointmentId}/${photoId}-${Date.now()}-${i}`);
+      const snapshot = await uploadBytes(imageRef, blob);
+      const photoURL = await getDownloadURL(snapshot.ref);
+      await updateDoc(appointmentRef, {
+        photoUrls: arrayUnion(photoURL)
+      });
+    }
+  } catch (error) {
+    console.error("Error adding images to appointment:", error);
+    throw error;
+  }
+};
+

@@ -38,5 +38,7 @@ module.exports = {
     "comma-dangle": "off",
     "arrow-parens": "off",
     "spaced-comment": "off",
+    "@typescript-eslint/no-extra-semi": "off",
+    "valid-jsdoc": "off",
   },
 };

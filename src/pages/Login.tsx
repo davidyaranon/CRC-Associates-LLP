@@ -45,7 +45,7 @@ const Login: React.FC = () => {
   return (
     <IonPage>
       <IonContent scrollY={false}>
-        <div className='center-content'>
+        <div className='center-content-login'>
           <section className='center-container'>
 
             {!auth && !loading &&
