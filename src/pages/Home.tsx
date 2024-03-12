@@ -4,7 +4,7 @@
  */
 
 import { useCallback, useEffect, useState } from 'react';
-import { IonContent, IonHeader, IonLoading, IonPage, IonRefresher, IonRefresherContent, IonTitle, IonToolbar, RefresherEventDetail, useIonToast, useIonViewWillEnter } from '@ionic/react';
+import { IonCardTitle, IonContent, IonHeader, IonLoading, IonPage, IonRefresher, IonRefresherContent, IonTitle, IonToolbar, RefresherEventDetail, useIonToast, useIonViewWillEnter } from '@ionic/react';
 import { SplashScreen } from '@capacitor/splash-screen';
 
 import { useAuthState } from "react-firebase-hooks/auth";
@@ -13,6 +13,8 @@ import useAppContext from '../hooks/useContext';
 import { CalendarEvent } from '../utils/types';
 import FirebaseAuth, { getGoogleCalendarEvents } from '../utils/server';
 import AppointmentsList from '../components/Shared/AppointmentsList';
+
+import CRC_Logo_v1 from '../assets/images/CRC_Logo_v1.png';
 
 import '../components/Home/Home.css';
 
@@ -49,30 +51,24 @@ const Home: React.FC = () => {
   }, [auth, handleFetchGoogleCalendarEvents]);
 
   return (
-    <IonPage>
+    <IonPage className='ion-page-ios-notch'>
 
       <IonLoading message="Loading..." isOpen={loading}></IonLoading>
-
       <IonHeader>
-        <IonToolbar>
-          <IonTitle>Upcoming</IonTitle>
-        </IonToolbar>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingLeft: '15px' }}>
+          <IonCardTitle>Appointments</IonCardTitle>
+          <img src={CRC_Logo_v1} style={{ width: '75px', height: 'auto', marginRight: '7.5px', marginBottom: '1px' }} /> 
+        </div>
       </IonHeader>
-      <IonContent fullscreen>
 
-        <IonRefresher slot="fixed" onIonRefresh={handleRefresh}>
-          <IonRefresherContent></IonRefresherContent>
-        </IonRefresher>
 
-        <IonHeader collapse="condense">
-          <IonToolbar>
-            <IonTitle size='large'>Upcoming</IonTitle>
-          </IonToolbar>
-        </IonHeader>
+      <IonContent fullscreen scrollY={false}>
 
-        <AppointmentsList events={events} />
 
+
+        <AppointmentsList upcomingEvents={events} handleRefreshUpcoming={handleRefresh} />
       </IonContent>
+
     </IonPage>
   );
 };

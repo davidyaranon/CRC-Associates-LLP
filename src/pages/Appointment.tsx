@@ -19,6 +19,8 @@ import { AppointmentInfo } from "../utils/types";
 import { cameraOutline, chevronBack } from "ionicons/icons";
 import IonPhotoViewer from "@codesyntax/ionic-react-photo-viewer";
 import { timeout } from "../utils/timeout";
+import { stripHtml } from "../utils/stripHtml";
+import SignatureComponent from "../components/Appointment/Signature";
 
 const PHOTO_UPLOAD_LIMIT = 3;
 
@@ -130,7 +132,7 @@ const Appointment = () => {
       <GoBackHeader title={appointmentInfo && "title" in appointmentInfo ? appointmentInfo.title : ''} />
       <IonContent>
 
-        <IonLoading message="Loading..." isOpen={pageLoading} duration={5000}></IonLoading>
+        <IonLoading message="Loading..." isOpen={pageLoading}></IonLoading>
 
         {!pageLoading && appointmentInfo &&
           <FadeIn>
@@ -160,10 +162,10 @@ const Appointment = () => {
               <IonLabel position="stacked">Appointment Details</IonLabel>
               <div style={{ height: "1vh" }} />
               <section className="appointment-details">
-                <p>{convertGoogleCalendarDateTimeToDate(appointmentInfo.startDateTime)}</p>
-                <p>{convertGoogleCalendarDateTimeToPST(appointmentInfo.startDateTime)} - {convertGoogleCalendarDateTimeToPST(appointmentInfo.endDateTime)}</p>
+                <p>{convertGoogleCalendarDateTimeToDate(appointmentInfo.startDateTime)}, {convertGoogleCalendarDateTimeToPST(appointmentInfo.startDateTime)} - {convertGoogleCalendarDateTimeToPST(appointmentInfo.endDateTime)}</p>
                 <p>{appointmentInfo.location}</p>
-                <p>{appointmentInfo.description}</p>
+                <br />
+                <p>{stripHtml(appointmentInfo.description)}</p>
               </section>
 
             </IonItem>
@@ -219,6 +221,17 @@ const Appointment = () => {
                 value={appointmentInfo.notes}
               />
             </IonItem>
+
+
+            <IonItem
+              style={{ "--background": "var(--ion-background-color)" }}
+              lines="full"
+            >
+              <IonLabel position="stacked">Signature</IonLabel>
+              <SignatureComponent />
+
+            </IonItem>
+
           </FadeIn>
         }
         <br />

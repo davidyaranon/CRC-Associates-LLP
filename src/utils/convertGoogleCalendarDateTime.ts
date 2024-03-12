@@ -23,7 +23,7 @@ export const convertGoogleCalendarDateTimeToPST = (dateTimeString: string | null
 
 /**
  * @function convertGoogleCalendarDateTimeToDate
- * @description converts a date time string to a date 
+ * @description converts a date time string to a readable date.
  * 
  * @param {string} dateTimeString 
  * @returns {string} the date extracted from the date time string
@@ -34,5 +34,13 @@ export const convertGoogleCalendarDateTimeToDate = (dateTimeString: string | nul
   const dateObject = new Date(dateTimeString);
   dateObject.setMinutes(dateObject.getMinutes() - dateObject.getTimezoneOffset());
   const date: string = dateObject.toISOString().split('T')[0];
-  return date;
+  const readableDate = new Date(date);
+
+  const options: Intl.DateTimeFormatOptions = {
+    weekday: 'short',
+    month: 'short',
+    day: 'numeric'
+  };
+  const formattedDate = readableDate.toLocaleDateString('en-US', options);
+  return formattedDate;
 };

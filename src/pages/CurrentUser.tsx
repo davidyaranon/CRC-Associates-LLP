@@ -1,59 +1,90 @@
-import { IonButton, IonContent, IonPage, useIonToast, useIonViewWillEnter } from "@ionic/react";
-import FirebaseAuth, { getPastGoogleCalendarEvents, googleAuthLogout, syncEventWithDb } from "../utils/server";
+import { IonAvatar, IonButton, IonButtons, IonContent, IonHeader, IonIcon, IonImg, IonPage, IonText, IonToolbar, useIonAlert, useIonViewWillEnter } from "@ionic/react";
+import FirebaseAuth, { googleAuthLogout } from "../utils/server";
 import useAppContext from "../hooks/useContext";
-import { useCallback, useEffect, useState } from "react";
 import { useAuthState } from "react-firebase-hooks/auth";
-import AppointmentsList from "../components/Shared/AppointmentsList";
-import { CalendarEvent } from "../utils/types";
+import { chatbubblesOutline, trophyOutline, notificationsOutline, informationCircleOutline, cameraReverseOutline } from "ionicons/icons";
+import FadeIn from "@rcnoverwatcher/react-fade-in-react-18/src/FadeIn";
 
 
 const CurrentUser = () => {
 
   const context = useAppContext();
   const [auth, loading] = useAuthState(FirebaseAuth);
-  const [present] = useIonToast();
 
-  const [events, setEvents] = useState<CalendarEvent[] | null>(null);
-  const [nextPageToken, setNextPageToken] = useState<string | null | undefined>(null);
+  const [presentAlert] = useIonAlert();
 
   useIonViewWillEnter(() => {
     context.setShowTabs(true);
-  }, [])
-
-  const handleGetPastEvents = useCallback(async (email: string | null | undefined, nextPageToken: string | null | undefined) => {
-    if (nextPageToken === undefined) { return; } // no more events
-    if (!email) {
-      present({ message: "User not authenticated, email missing", duration: 3000, color: "danger" });
-      return;
-    }
-    const res = await getPastGoogleCalendarEvents(email, nextPageToken);
-    setEvents((prev) => {
-      if (prev) {
-        return [...prev, ...res.events];
-      }
-      return res.events;
-    });
-    if (res.nextPageToken === null) { // no more events}
-      setNextPageToken(undefined);
-    } else {
-      setNextPageToken(res.nextPageToken);
-    }
   }, []);
 
-  useEffect(() => {
-    if (!loading && auth) {
-      handleGetPastEvents(auth.email, null)
-    }
-  }, [auth, loading, handleGetPastEvents]);
+  const handleLogout = async () => {
+    presentAlert({
+      cssClass: 'ion-alert-logout',
+      header: 'Logout',
+      message: 'Are you sure you want to logout?',
+      buttons:
+        [
+          {
+            text: 'Cancel',
+            role: 'cancel',
+            cssClass: 'alert-cancel-button',
+          },
+          {
+            text: 'Logout',
+            handler: async () => {
+              await googleAuthLogout();
+            },
+          },
+        ]
+    })
+
+  }
+
 
   return (
     <IonPage>
       <IonContent>
 
-        <IonButton onClick={googleAuthLogout}>Logout</IonButton>
-        <IonButton onClick={() => handleGetPastEvents(auth?.email, nextPageToken)}>Get next batch</IonButton>
+        <IonToolbar mode="ios" style={{ height: "5vh" }}>
+          <IonButtons slot="start">
+            <IonButton
+              onClick={handleLogout}
+              color="danger"
+              fill="clear"
+            >
+              Logout
+            </IonButton>
+          </IonButtons>
+          <IonButtons slot="end">
+            <IonButton
+              color={"primary"}
+              onClick={() => {
+              }}
+            >
+              <IonIcon icon={notificationsOutline}></IonIcon>
+            </IonButton>
+            <IonButton
+              color={"primary"}
+              onClick={() => {
+              }}
+            >
+              <IonIcon icon={informationCircleOutline}></IonIcon>
+            </IonButton>
+          </IonButtons>
+        </IonToolbar><IonHeader mode="ios" class="ion-no-border" style={{ textAlign: "center", }}>
+          <IonAvatar className="user-avatar-settings">
+            <IonImg style={{ opacity: "80%" }} className="user-image" src={auth?.photoURL ?? ''}></IonImg>
+          </IonAvatar>
+        </IonHeader>
 
-        <AppointmentsList events={events} />
+        {auth &&
+          <FadeIn delay={500}>
+            <p style={{ fontSize: "1.4em", textAlign: "center", fontWeight: 'bolder' }}>
+              Hello,
+              <IonText color={"primary"}>&nbsp;{auth.displayName}</IonText>
+            </p>
+          </FadeIn>
+        }
 
 
       </IonContent>

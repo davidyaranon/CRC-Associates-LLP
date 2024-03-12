@@ -10,7 +10,7 @@
 
 
 .center-content {
-  height: calc(100% - 96.5px);
+  height: 100%;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -29,19 +29,42 @@
 
 .event-title {
   font-weight: bold;
-  font-size: 1.2rem;
+  font-size: 1.25rem;
   margin-bottom: 5%;
   margin-top: 5%;
-}
-
-.event-time,
-.event-date,
-.event-location,
-.event-description {
-  font-size: smaller;
 }
 
 .attachments {
   color: primary;
   font-size: smaller;
+}
+
+.ion-page-ios-notch {
+  margin-top: constant(safe-area-inset-top);
+  margin-top: env(safe-area-inset-top);
+}
+
+ion-card {
+  box-shadow: none !important;
+}
+
+.user-avatar-settings {
+  height: 85px;
+  width: 85px;
+  display: inline-block;
+  border: 1px solid rgb(119, 119, 119);
+  overflow: hidden;
+  text-align: center;
+}
+
+.ion-alert-dialog-cancel {
+  --color: var(--ion-color-danger);
+}
+
+.ion-alert-logout {
+  --background: var(--ion-background-color);
+}
+
+button.alert-button.alert-cancel-button {
+  color: var(--ion-color-danger);
 }
