@@ -42,7 +42,7 @@ const CurrentUser = () => {
 
 
   return (
-    <IonPage>
+    <IonPage className='ion-page-ios-notch'>
       <IonContent>
 
         <IonToolbar mode="ios" style={{ height: "5vh" }}>
@@ -73,7 +73,7 @@ const CurrentUser = () => {
           </IonButtons>
         </IonToolbar><IonHeader mode="ios" class="ion-no-border" style={{ textAlign: "center", }}>
           <IonAvatar className="user-avatar-settings">
-            <IonImg style={{ opacity: "80%" }} className="user-image" src={auth?.photoURL ?? ''}></IonImg>
+            <IonImg src={auth?.photoURL ?? ''}></IonImg>
           </IonAvatar>
         </IonHeader>
 
