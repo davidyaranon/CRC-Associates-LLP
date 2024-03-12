@@ -11,37 +11,20 @@ export function mapTiler(darkMode: boolean, x: number, y: number, z: number, dpr
 
 
 export const zoomControlButtonsStyleDark = {
-  width: "50px",
-  height: '50px',
-  borderRadius: '5px',
-  boxShadow: '0 1px 4px -1px rgba(0,0,0,.3)',
-  background: 'var(--ion-color-light)',
-  lineHeight: '25px',
-  fontSize: '20px',
-  fontWeight: '500',
-  color: 'var(--ion-color-medium)',
+  borderRadius: '2.5px',
+  background: 'var(--ion-background-color)',
+  color: 'white',
   cursor: 'pointer',
-  border: '0.5px solid var(--ion-color-medium)',
-  display: 'block',
   outline: 'none',
   textIndent: '0px',
 }; // +/- buttons that appear on map can be styled here (dark mode version)
 
 export const zoomControlButtonsStyle = {
-  width: "50px",
-  height: '50px',
-  borderRadius: '5px',
-  boxShadow: '0 1px 4px -1px rgba(0,0,0,.3)',
-  background: 'var(--ion-color-light)',
-  lineHeight: '25px',
-  fontSize: '20px',
-  fontWeight: '500',
+  borderRadius: '2.5px',
+  background: 'var(--ion-background-color)',
   color: 'black',
   cursor: 'pointer',
   border: '0.5px solid var(--ion-color-warning)',
-  display: 'block',
-  outline: 'none',
-  textIndent: '0px',
 }; // +/- buttons that appear on map can be styled here
 
 export type MapMarker = {

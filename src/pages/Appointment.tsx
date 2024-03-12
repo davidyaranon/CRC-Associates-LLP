@@ -7,7 +7,7 @@ import { Map, Marker, ZoomControl } from "pigeon-maps";
 import FirebaseAuth, { getAppointmentInfo, handleAddImagesToAppointment, syncEventWithDb } from "../utils/server";
 import { useAuthState } from "react-firebase-hooks/auth";
 import GoBackHeader from "../components/Shared/GoBackHeader";
-import { mapTiler } from "../utils/mapConfig";
+import { mapTiler, zoomControlButtonsStyle, zoomControlButtonsStyleDark } from "../utils/mapConfig";
 import { Camera } from "@capacitor/camera";
 import FadeIn from "@rcnoverwatcher/react-fade-in-react-18/src/FadeIn";
 
@@ -21,6 +21,7 @@ import IonPhotoViewer from "@codesyntax/ionic-react-photo-viewer";
 import { timeout } from "../utils/timeout";
 import { stripHtml } from "../utils/stripHtml";
 import SignatureComponent from "../components/Appointment/Signature";
+import useAppContext from "../hooks/useContext";
 
 const PHOTO_UPLOAD_LIMIT = 3;
 
@@ -32,6 +33,7 @@ const Appointment = () => {
   const params = useParams<AppointmentPageParams>();
   const appointmentId: string = params.appointmentId;
 
+  const context = useAppContext();
   const [auth, loading] = useAuthState(FirebaseAuth);
   const [presentToast] = useIonToast();
   const [presentLoading, dismissLoading] = useIonLoading();
@@ -139,14 +141,14 @@ const Appointment = () => {
             {appointmentInfo.latitude && appointmentInfo.longitude &&
               <section className='map-container'>
                 <Map
-                  provider={(x, y, z, dpr) => mapTiler(false /* context.darkMode */, x, y, z, dpr)}
+                  provider={(x, y, z, dpr) => mapTiler(context.darkMode, x, y, z, dpr)}
                   center={[appointmentInfo.latitude, appointmentInfo.longitude]}
                 >
-                  <ZoomControl></ZoomControl>
+                  <ZoomControl buttonStyle={context.darkMode ? zoomControlButtonsStyleDark : zoomControlButtonsStyle}></ZoomControl>
                   <Marker onClick={
                     () => handleClickOnMarker(appointmentInfo.latitude.toString(), appointmentInfo.longitude.toString(), appointmentInfo.title)
                   }
-                    color='var(--ion-color-secondary)'
+                    color='var(--ion-color-primary)'
                     width={35}
                     anchor={[appointmentInfo.latitude, appointmentInfo.longitude]}>
 

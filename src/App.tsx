@@ -29,6 +29,7 @@ import useTabBarVisibility from './hooks/useTabBarVisibility';
 import { SplashScreen } from '@capacitor/splash-screen';
 import Appointment from './pages/Appointment';
 import CurrentUser from './pages/CurrentUser';
+import useDarkMode from './hooks/useDarkMode';
 
 setupIonicReact({ mode: 'ios' });
 SplashScreen.show();
@@ -38,6 +39,7 @@ const RoutingSystem = () => {
   const router = useIonRouter();
   const context = useAppContext();
   const { tabBarDisplay, tabBarOpacity } = useTabBarVisibility(context);
+  const theme = useDarkMode(context);
 
   const [currentTab, setCurrentTab] = useState<string>('home');
 

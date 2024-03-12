@@ -1,10 +1,19 @@
-import { IonAvatar, IonButton, IonButtons, IonContent, IonHeader, IonIcon, IonImg, IonPage, IonText, IonToolbar, useIonAlert, useIonViewWillEnter } from "@ionic/react";
+import { IonAvatar, IonButton, IonButtons, IonContent, IonHeader, IonIcon, IonImg, IonItem, IonLabel, IonList, IonPage, IonText, IonToggle, IonToolbar, useIonAlert, useIonViewWillEnter } from "@ionic/react";
 import FirebaseAuth, { googleAuthLogout } from "../utils/server";
 import useAppContext from "../hooks/useContext";
 import { useAuthState } from "react-firebase-hooks/auth";
-import { chatbubblesOutline, trophyOutline, notificationsOutline, informationCircleOutline, cameraReverseOutline } from "ionicons/icons";
+import { chatbubblesOutline, trophyOutline, notificationsOutline, informationCircleOutline, cameraReverseOutline, moonOutline } from "ionicons/icons";
 import FadeIn from "@rcnoverwatcher/react-fade-in-react-18/src/FadeIn";
+import { Keyboard, KeyboardStyle, KeyboardStyleOptions } from "@capacitor/keyboard";
+import { Preferences } from "@capacitor/preferences";
+import { StatusBar, Style } from "@capacitor/status-bar";
 
+const keyStyleOptionsLight: KeyboardStyleOptions = {
+  style: KeyboardStyle.Light
+};
+const keyStyleOptionsDark: KeyboardStyleOptions = {
+  style: KeyboardStyle.Dark
+};
 
 const CurrentUser = () => {
 
@@ -17,6 +26,30 @@ const CurrentUser = () => {
     context.setShowTabs(true);
   }, []);
 
+  /**
+   * @description updates the dark mode values in context and Capacitor Preferences (localStorage).
+   * The document body class list, status bar, and keyboard styles are updated to reflect 
+   * the selection between light and dark mode.
+   * 
+   * @param {boolean} isChecked whether the toggle was enabled or disabled by the user.
+   */
+  const toggleDarkMode = async (isChecked: boolean): Promise<void> => {
+    context.setDarkMode(isChecked);
+    await Preferences.set({ key: 'darkMode', value: JSON.stringify(isChecked) });
+    if (isChecked) {
+      document.body.classList.add('dark');
+      await StatusBar.setStyle({ style: Style.Dark });
+      await Keyboard.setStyle(keyStyleOptionsDark);
+    } else {
+      document.body.classList.remove('dark');
+      await StatusBar.setStyle({ style: Style.Light });
+      await Keyboard.setStyle(keyStyleOptionsLight);
+    }
+  };
+
+  /**
+   * @description presents the user with an alert to confirm logout.
+   */
   const handleLogout = async () => {
     presentAlert({
       cssClass: 'ion-alert-logout',
@@ -45,7 +78,7 @@ const CurrentUser = () => {
     <IonPage className='ion-page-ios-notch'>
       <IonContent>
 
-        <IonToolbar mode="ios" style={{ height: "5vh" }}>
+        <IonToolbar mode="ios" style={{ height: "5vh", '--background' : '--ion-background-color' }}>
           <IonButtons slot="start">
             <IonButton
               onClick={handleLogout}
@@ -71,7 +104,8 @@ const CurrentUser = () => {
               <IonIcon icon={informationCircleOutline}></IonIcon>
             </IonButton>
           </IonButtons>
-        </IonToolbar><IonHeader mode="ios" class="ion-no-border" style={{ textAlign: "center", }}>
+        </IonToolbar>
+        <IonHeader mode="ios" class="ion-no-border" style={{ textAlign: "center", }}>
           <IonAvatar className="user-avatar-settings">
             <IonImg src={auth?.photoURL ?? ''}></IonImg>
           </IonAvatar>
@@ -86,6 +120,12 @@ const CurrentUser = () => {
           </FadeIn>
         }
 
+        <IonList lines='full'>
+          <IonItem>
+            <IonIcon aria-hidden='true' icon={moonOutline} slot='start' ></IonIcon>
+            <IonLabel><IonToggle checked={context.darkMode} onIonChange={(e) => { toggleDarkMode(e.detail.checked) }}>Dark Mode</IonToggle></IonLabel>
+          </IonItem>
+        </IonList>
 
       </IonContent>
     </IonPage>

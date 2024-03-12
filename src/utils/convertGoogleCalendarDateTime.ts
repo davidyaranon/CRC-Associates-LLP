@@ -1,4 +1,4 @@
-
+import { DateTime } from 'luxon';
 
 /**
  * @function convertGoogleCalendarDateTimeToPST
@@ -10,14 +10,9 @@
 export const convertGoogleCalendarDateTimeToPST = (dateTimeString: string | null): string => {
   if (!dateTimeString) return '';
 
-  const dateObject: Date = new Date(dateTimeString);
-  const time: string = dateObject.toLocaleTimeString('en-US', {
-    hour: 'numeric',
-    minute: 'numeric',
-    hour12: true,
-    timeZone: 'America/Los_Angeles'
-  });
-  return time;
+  const zonedDate = DateTime.fromISO(dateTimeString, { zone: 'America/Los_Angeles' });
+  const formattedTime = zonedDate.toFormat('h:mm a');
+  return formattedTime;
 };
 
 
@@ -25,22 +20,13 @@ export const convertGoogleCalendarDateTimeToPST = (dateTimeString: string | null
  * @function convertGoogleCalendarDateTimeToDate
  * @description converts a date time string to a readable date.
  * 
- * @param {string} dateTimeString 
+ * @param {string} zonedDateTimeString 
  * @returns {string} the date extracted from the date time string
  */
-export const convertGoogleCalendarDateTimeToDate = (dateTimeString: string | null): string => {
-  if (!dateTimeString) return '';
+export const convertGoogleCalendarDateTimeToDate = (zonedDateTimeString: string | null): string => {
+  if (!zonedDateTimeString) return '';
 
-  const dateObject = new Date(dateTimeString);
-  dateObject.setMinutes(dateObject.getMinutes() - dateObject.getTimezoneOffset());
-  const date: string = dateObject.toISOString().split('T')[0];
-  const readableDate = new Date(date);
-
-  const options: Intl.DateTimeFormatOptions = {
-    weekday: 'short',
-    month: 'short',
-    day: 'numeric'
-  };
-  const formattedDate = readableDate.toLocaleDateString('en-US', options);
-  return formattedDate;
+  const zonedDate = DateTime.fromISO(zonedDateTimeString, { zone: 'America/Los_Angeles' });
+  const formattedDate = zonedDate.toFormat('LLL dd, yyyy');
+  return formattedDate
 };

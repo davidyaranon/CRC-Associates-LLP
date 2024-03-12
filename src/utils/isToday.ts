@@ -1,3 +1,6 @@
+import { DateTime } from 'luxon';
+
+
 /**
  * @description Determines if the provided date string is today.
  * 
@@ -5,9 +8,9 @@
  * @returns {boolean} True if the date is today, false otherwise
  */
 export function isToday(dateString: string | null): boolean {
-  if(!dateString) return false;
-  const inputDate = new Date(dateString);
-  const today = new Date();
+  if (!dateString) return false;
 
-  return inputDate.setHours(0, 0, 0, 0) === today.setHours(0, 0, 0, 0);
+  const inputDate = DateTime.fromISO(dateString);
+  const now = DateTime.local();
+  return inputDate.hasSame(now, 'day');
 }
