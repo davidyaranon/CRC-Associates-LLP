@@ -3,6 +3,7 @@ import { chevronBackOutline } from "ionicons/icons";
 
 type GoBackHeaderProps = {
   title: string;
+  titleStyle: any;
   buttons?: any;
   translucent?: boolean;
 };
@@ -19,7 +20,7 @@ const GoBackHeader: React.FC<GoBackHeaderProps> = (props: GoBackHeaderProps) => 
           <IonButton style={{ fontSize: '1.15em', marginLeft: '-2.5px' }} onClick={() => { router.goBack(); }}>
             <IonIcon icon={chevronBackOutline} /> <p>Back</p>
           </IonButton>
-          <IonTitle>{title}</IonTitle>
+          <IonTitle style={props.titleStyle ? props.titleStyle : {}}>{title}</IonTitle>
         </IonButtons>
         {props.buttons &&
           <IonButtons slot="end">

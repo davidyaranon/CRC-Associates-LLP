@@ -327,11 +327,14 @@ exports.syncCalendarEventWithDb = functions.https.onCall(async (data, context) =
         ...event,
         ...additionalInfo
       };
-      firestore.collection('users').doc(uid).collection('appointments').doc(id).set(eventWithAdditionalInfo);
+      const batch = firestore.batch();
+      const appointmentRef = firestore.collection('users').doc(uid).collection('appointments').doc(id);
+      batch.set(appointmentRef, eventWithAdditionalInfo);
+      await batch.commit();
+      return { result: 'Calendar event added to Firestore' };
     } else {
       throw new Error('No event found with id ' + id);
     }
-    return { result: 'Calendar event added to Firestore' };
   } catch (error) {
     console.error('Error:', error);
     throw new functions.https.HttpsError('unknown', 'Failed to fetch and store calendar events');

@@ -67,7 +67,7 @@ const AppointmentsList = (props: AppointmentsListProps) => {
 
   return (
     <>
-      <IonSegment id='profile-segment' value={selectedSegment} onIonChange={async (e) => {
+      <IonSegment id='appointment-segment' value={selectedSegment} onIonChange={async (e) => {
         setSelectedSegment(e.detail.value as string);
         if (!pastEvents && auth && !loading) {
           await handleGetPastEvents(auth.email, null);

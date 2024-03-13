@@ -1,39 +1,47 @@
-import { IonCard, IonContent, IonLoading, IonPage, IonCardTitle, useIonToast, IonButton, IonItem, IonCardContent, IonCardHeader, IonIcon, IonLabel, useIonLoading, IonTextarea } from "@ionic/react";
-import { useCallback, useEffect, useState } from "react";
+/**
+ * @file Appointment.tsx
+ */
+
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useParams } from "react-router-dom";
-
+import { Capacitor } from "@capacitor/core";
+import { Camera } from "@capacitor/camera";
+import { IonCard, IonContent, IonLoading, IonPage, useIonToast, IonItem, IonIcon, IonLabel, useIonLoading, IonTextarea, useIonViewWillEnter, IonButton } from "@ionic/react";
+import { cameraOutline, chevronBack, pencilOutline } from "ionicons/icons";
+import IonPhotoViewer from "@codesyntax/ionic-react-photo-viewer";
 import { Map, Marker, ZoomControl } from "pigeon-maps";
-
-import FirebaseAuth, { getAppointmentInfo, handleAddImagesToAppointment, syncEventWithDb } from "../utils/server";
 import { useAuthState } from "react-firebase-hooks/auth";
 import GoBackHeader from "../components/Shared/GoBackHeader";
 import { mapTiler, zoomControlButtonsStyle, zoomControlButtonsStyleDark } from "../utils/mapConfig";
-import { Camera } from "@capacitor/camera";
 import FadeIn from "@rcnoverwatcher/react-fade-in-react-18/src/FadeIn";
-
-
-import '../components/Appointment/Appointment.css';
-import { Capacitor } from "@capacitor/core";
-import { convertGoogleCalendarDateTimeToDate, convertGoogleCalendarDateTimeToPST } from "../utils/convertGoogleCalendarDateTime";
 import { AppointmentInfo } from "../utils/types";
-import { cameraOutline, chevronBack } from "ionicons/icons";
-import IonPhotoViewer from "@codesyntax/ionic-react-photo-viewer";
 import { timeout } from "../utils/timeout";
 import { stripHtml } from "../utils/stripHtml";
-import SignatureComponent from "../components/Appointment/Signature";
 import useAppContext from "../hooks/useContext";
+import FirebaseAuth, { getAppointmentInfo, handleAddImagesToAppointment, syncEventWithDb } from "../utils/server"
+import { convertGoogleCalendarDateTimeToDate, convertGoogleCalendarDateTimeToPST } from "../utils/convertGoogleCalendarDateTime";
+import AppointmentSignatureModal from "../components/Appointment/AppointmentSignatureModal";
+import '../components/Appointment/Appointment.css';
 
-const PHOTO_UPLOAD_LIMIT = 3;
+
+const PHOTO_UPLOAD_LIMIT: number = 3;
 
 type AppointmentPageParams = {
   appointmentId: string;
-}
+};
+
+const SignatureButton = (
+  <IonButton id='open-appointment-signature-modal'>
+    <IonIcon icon={pencilOutline} />
+  </IonButton>
+)
 
 const Appointment = () => {
   const params = useParams<AppointmentPageParams>();
   const appointmentId: string = params.appointmentId;
 
   const context = useAppContext();
+  const pageRef = useRef(undefined);
   const [auth, loading] = useAuthState(FirebaseAuth);
   const [presentToast] = useIonToast();
   const [presentLoading, dismissLoading] = useIonLoading();
@@ -129,10 +137,19 @@ const Appointment = () => {
     }
   }, [auth, loading, appointmentId, handleViewAppointment, presentToast]);
 
+  useIonViewWillEnter(() => {
+    context.setShowTabs(false);
+  }, [])
+
   return (
-    <IonPage>
-      <GoBackHeader title={appointmentInfo && "title" in appointmentInfo ? appointmentInfo.title : ''} />
+    <IonPage ref={pageRef}>
+
+      <AppointmentSignatureModal presentingElement={pageRef.current} />
+
+      <GoBackHeader titleStyle={{marginLeft: '12.5px'}} title={appointmentInfo && "title" in appointmentInfo ? appointmentInfo.title : ''} buttons={SignatureButton} />
+
       <IonContent>
+        <div style={{height: '1%'}}></div>
 
         <IonLoading message="Loading..." isOpen={pageLoading}></IonLoading>
 
@@ -222,16 +239,6 @@ const Appointment = () => {
               <IonTextarea
                 value={appointmentInfo.notes}
               />
-            </IonItem>
-
-
-            <IonItem
-              style={{ "--background": "var(--ion-background-color)" }}
-              lines="full"
-            >
-              <IonLabel position="stacked">Signature</IonLabel>
-              <SignatureComponent />
-
             </IonItem>
 
           </FadeIn>
