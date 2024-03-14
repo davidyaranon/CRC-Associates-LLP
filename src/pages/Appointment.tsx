@@ -22,6 +22,8 @@ import FirebaseAuth, { getAppointmentInfo, handleAddImagesToAppointment, syncEve
 import { convertGoogleCalendarDateTimeToDate, convertGoogleCalendarDateTimeToPST } from "../utils/convertGoogleCalendarDateTime";
 import AppointmentSignatureModal from "../components/Appointment/AppointmentSignatureModal";
 import '../components/Appointment/Appointment.css';
+import ReactQuill from "react-quill";
+import 'react-quill/dist/quill.snow.css';
 
 
 const PHOTO_UPLOAD_LIMIT: number = 3;
@@ -49,6 +51,7 @@ const Appointment = () => {
 
   const [appointmentInfo, setAppointmentInfo] = useState<AppointmentInfo | null>(null);
   const [photos, setPhotos] = useState<string[]>([]);
+  const [notes, setNotes] = useState<string>('');
 
   const handleSelectImages = async () => {
     const images = await Camera.pickImages({
@@ -118,6 +121,7 @@ const Appointment = () => {
       }
       setAppointmentInfo(appointmentData);
       setPhotos(appointmentData.photoUrls);
+      setNotes(appointmentData.notes);
     } catch (error) {
       console.error(JSON.stringify(error));
       console.error("Error:", error);
@@ -146,10 +150,10 @@ const Appointment = () => {
 
       <AppointmentSignatureModal presentingElement={pageRef.current} />
 
-      <GoBackHeader titleStyle={{marginLeft: '12.5px'}} title={appointmentInfo && "title" in appointmentInfo ? appointmentInfo.title : ''} buttons={SignatureButton} />
+      <GoBackHeader titleStyle={{ marginLeft: '12.5px' }} title={appointmentInfo && "title" in appointmentInfo ? appointmentInfo.title : ''} buttons={SignatureButton} />
 
       <IonContent>
-        <div style={{height: '1%'}}></div>
+        <div style={{ height: '1%' }}></div>
 
         <IonLoading message="Loading..." isOpen={pageLoading}></IonLoading>
 
@@ -236,14 +240,15 @@ const Appointment = () => {
             >
               <IonLabel position="stacked">Notes</IonLabel>
 
-              <IonTextarea
-                value={appointmentInfo.notes}
-              />
+              <ReactQuill theme='snow' value={notes} onChange={setNotes} />
+              <br /><br /><br /><br /><br /><br />
+
             </IonItem>
+
 
           </FadeIn>
         }
-        <br />
+
       </IonContent>
     </IonPage>
   )

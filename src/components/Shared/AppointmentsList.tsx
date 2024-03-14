@@ -1,21 +1,25 @@
-import { IonItem, IonList, IonNote, IonSkeletonText, IonCardTitle, useIonRouter, useIonToast, IonLabel, IonSegment, IonSegmentButton, IonContent, IonRefresher, IonRefresherContent, RefresherEventDetail, IonIcon, IonRow, IonFab } from "@ionic/react";
+/**
+ * @file AppointmentsList.tsx
+ */
+
+import { useCallback, useState } from "react";
+import { IonItem, IonList, IonSkeletonText, IonCardTitle, useIonRouter, useIonToast, IonLabel, IonSegment, IonSegmentButton, IonContent, IonRefresher, IonRefresherContent, RefresherEventDetail, IonRow, IonFab, IonInfiniteScroll, IonInfiniteScrollContent } from "@ionic/react";
+import { useAuthState } from "react-firebase-hooks/auth";
 import FadeIn from "@rcnoverwatcher/react-fade-in-react-18/src/FadeIn";
 
-import { convertGoogleCalendarDateTimeToDate, convertGoogleCalendarDateTimeToPST } from "../../utils/convertGoogleCalendarDateTime";
 import { stripHtml } from "../../utils/stripHtml";
 import { isToday } from "../../utils/isToday";
 import { CalendarEvent } from "../../utils/types";
+import FirebaseAuth, { getPastGoogleCalendarEvents } from "../../utils/server";
+import { convertGoogleCalendarDateTimeToDate, convertGoogleCalendarDateTimeToPST } from "../../utils/convertGoogleCalendarDateTime";
 
 import '../Appointment/Appointment.css';
-import { useCallback, useState } from "react";
-import FirebaseAuth, { getPastGoogleCalendarEvents } from "../../utils/server";
-import { useAuthState } from "react-firebase-hooks/auth";
-import { time } from "ionicons/icons";
 
 type AppointmentsListProps = {
   upcomingEvents: CalendarEvent[] | null;
+  contentRef: React.MutableRefObject<HTMLIonContentElement | null>;
   handleRefreshUpcoming: (event: CustomEvent<RefresherEventDetail>) => Promise<void>;
-}
+};
 
 const AppointmentsList = (props: AppointmentsListProps) => {
 
@@ -27,7 +31,6 @@ const AppointmentsList = (props: AppointmentsListProps) => {
 
   const [pastEvents, setPastEvents] = useState<CalendarEvent[] | null>(null);
   const [nextPageToken, setNextPageToken] = useState<string | null | undefined>(null);
-
   const [selectedSegment, setSelectedSegment] = useState<string>('Upcoming');
 
   const handleClickOnAppointment = (id: string | null) => {
@@ -51,7 +54,7 @@ const AppointmentsList = (props: AppointmentsListProps) => {
       }
       return res.events;
     });
-    if (res.nextPageToken === null) { // no more events}
+    if (res.nextPageToken === null) { // no more events
       setNextPageToken(undefined);
     } else {
       setNextPageToken(res.nextPageToken);
@@ -69,7 +72,7 @@ const AppointmentsList = (props: AppointmentsListProps) => {
     <>
       <IonSegment id='appointment-segment' value={selectedSegment} onIonChange={async (e) => {
         setSelectedSegment(e.detail.value as string);
-        if (!pastEvents && auth && !loading) {
+        if (e.detail.value === 'Upcoming' && !pastEvents && auth && !loading) {
           await handleGetPastEvents(auth.email, null);
         }
       }}
@@ -90,7 +93,7 @@ const AppointmentsList = (props: AppointmentsListProps) => {
 
       <div style={{ height: '7.5px' }} />
 
-      <IonContent>
+      <IonContent ref={props.contentRef}>
 
         <IonRefresher slot="fixed" onIonRefresh={selectedSegment === 'Upcoming' ? props.handleRefreshUpcoming : handleRefreshPast}>
           <IonRefresherContent></IonRefresherContent>
@@ -190,6 +193,16 @@ const AppointmentsList = (props: AppointmentsListProps) => {
               }
             </IonList>
 
+            <IonInfiniteScroll
+              onIonInfinite={async (ev) => {
+                if (!auth || !pastEvents || loading) return;
+                await handleGetPastEvents(auth.email, nextPageToken)
+                ev.target.complete();
+              }}
+            >
+              <IonInfiniteScrollContent></IonInfiniteScrollContent>
+            </IonInfiniteScroll>
+
             {pastEvents && pastEvents.length <= 0 &&
               <div className='center-content'>
                 <p className='ion-text-center'>Something went wrong when accessing calendar.</p>
@@ -198,9 +211,9 @@ const AppointmentsList = (props: AppointmentsListProps) => {
           </>
         }
 
-        <div style={{height: '10vh'}}></div>
+        <div style={{ height: '10vh' }}></div>
 
-      </IonContent>
+      </IonContent >
 
     </>
 

@@ -32,7 +32,7 @@ import CurrentUser from './pages/CurrentUser';
 import useDarkMode from './hooks/useDarkMode';
 
 setupIonicReact({ mode: 'ios' });
-SplashScreen.show();
+SplashScreen.show({ showDuration: 2000, fadeInDuration: 300, fadeOutDuration: 300, autoHide: true });
 
 const RoutingSystem = () => {
 

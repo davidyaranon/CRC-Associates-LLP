@@ -111,7 +111,7 @@ const fetchGoogleCalendarEvents = async (CALENDAR_ID: string): Promise<CalendarE
  * @return {Promise<{ events: CalendarEvent[], nextPageToken: string | null }>}
  */
 const fetchPastGoogleCalendarEvents = async (CALENDAR_ID: string, pageToken: string | null = null): Promise<{ events: CalendarEvent[], nextPageToken: string | null }> => {
-  const MAX_RESULTS = 2;
+  const MAX_RESULTS = 10;
   const SCOPES = ['https://www.googleapis.com/auth/calendar.readonly'];
   const jwtClient = new google.auth.JWT(
     serviceAccount.client_email,
@@ -127,6 +127,9 @@ const fetchPastGoogleCalendarEvents = async (CALENDAR_ID: string, pageToken: str
   const timeMinDate = new Date();
   timeMinDate.setFullYear(timeMinDate.getFullYear() - 5); // Set to 5 years ago
   timeMinDate.setHours(0, 0, 0, 0);
+  const timeMaxDate = new Date();
+  timeMaxDate.setDate(timeMaxDate.getDate() - 1);
+  timeMaxDate.setHours(23, 59, 59, 999); // Set to end of yesterday
 
   try {
     let response;
@@ -134,6 +137,7 @@ const fetchPastGoogleCalendarEvents = async (CALENDAR_ID: string, pageToken: str
       response = await calendar.events.list({
         calendarId: CALENDAR_ID,
         timeMin: timeMinDate.toISOString(),
+        timeMax: timeMaxDate.toISOString(),
         maxResults: MAX_RESULTS,
         singleEvents: true,
         orderBy: 'startTime',
@@ -143,6 +147,7 @@ const fetchPastGoogleCalendarEvents = async (CALENDAR_ID: string, pageToken: str
       response = await calendar.events.list({
         calendarId: CALENDAR_ID,
         timeMin: timeMinDate.toISOString(),
+        timeMax: timeMaxDate.toISOString(),
         maxResults: MAX_RESULTS,
         singleEvents: true,
         orderBy: 'startTime',
@@ -157,7 +162,7 @@ const fetchPastGoogleCalendarEvents = async (CALENDAR_ID: string, pageToken: str
       return { events: [], nextPageToken: null };
     }
 
-    let calendarEvents = events.map(event => {
+    let calendarEvents = events.reverse().map(event => {
       const attachments = event.attachments;
       let listOfAttachments = attachments?.map(attachment => ({ name: attachment.title, fileUrl: attachment.fileUrl })) ?? [];
 

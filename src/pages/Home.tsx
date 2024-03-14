@@ -3,7 +3,7 @@
  * @fileoverview the Home page of the application.
  */
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { IonCardTitle, IonContent, IonHeader, IonLoading, IonPage, IonRefresher, IonRefresherContent, IonTitle, IonToolbar, RefresherEventDetail, useIonToast, useIonViewWillEnter } from '@ionic/react';
 import { SplashScreen } from '@capacitor/splash-screen';
 
@@ -21,6 +21,7 @@ import '../components/Home/Home.css';
 const Home: React.FC = () => {
 
   const context = useAppContext();
+  const contentRef = useRef<HTMLIonContentElement | null>(null);
   const [auth, loading, error] = useAuthState(FirebaseAuth);
   const [present] = useIonToast();
 
@@ -45,7 +46,7 @@ const Home: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    SplashScreen.hide();
+    // SplashScreen.hide();
     context.setShowTabs(true);
     handleFetchGoogleCalendarEvents();
   }, [auth, handleFetchGoogleCalendarEvents]);
@@ -57,16 +58,12 @@ const Home: React.FC = () => {
       <IonHeader>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingLeft: '15px' }}>
           <IonCardTitle>Appointments</IonCardTitle>
-          <img src={CRC_Logo_v1} style={{ width: '75px', height: 'auto', marginRight: '7.5px', marginBottom: '1px' }} /> 
+          <img onClick={() => contentRef && contentRef.current && contentRef.current.scrollToTop(1000)} src={CRC_Logo_v1} style={{ width: '75px', height: 'auto', marginRight: '7.5px', marginBottom: '1px' }} />
         </div>
       </IonHeader>
 
-
       <IonContent fullscreen scrollY={false}>
-
-
-
-        <AppointmentsList upcomingEvents={events} handleRefreshUpcoming={handleRefresh} />
+        <AppointmentsList contentRef={contentRef} upcomingEvents={events} handleRefreshUpcoming={handleRefresh} />
       </IonContent>
 
     </IonPage>
