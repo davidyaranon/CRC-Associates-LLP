@@ -47,10 +47,10 @@ const AppointmentSignature = (props: AppointmentSignatureProps) => {
     <>
       <IonGrid>
         <IonRow>
-          <canvas ref={canvasRef} style={{ border: '1px solid gray', borderRadius: '10px', width: props.width || '50vw', height: props.height || '50vh' }}></canvas>
+          <canvas ref={canvasRef} style={{ border: '1px solid gray', width: props.width || '50vw', height: props.height || '50vh' }}></canvas>
         </IonRow>
-        <IonRow>
-          <IonButton fill='clear' color='danger' onClick={() => signaturePad?.clear()}>Clear</IonButton>
+        <IonRow style={{ justifyContent: 'flex-end' }}>
+          <IonButton  fill='clear' color='danger' onClick={() => signaturePad?.clear()}>Clear</IonButton>
           <IonButton fill='clear' color='primary'>Save</IonButton>
         </IonRow>
       </IonGrid>

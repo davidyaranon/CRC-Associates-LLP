@@ -252,12 +252,12 @@ body.dark {
   --ion-color-step-900: #191919;
   --ion-color-step-950: #0d0d0d;
 
-  --ion-toolbar-background: #ffffff;
+  --ion-toolbar-background: #fafafa;
 
   --ion-item-background: #fbfbfb;
   --ion-tab-bar-background: #fafafa;
 
-  --ion-card-background: #fafafa;
+  --ion-card-background: #e3e3e3;
 }
 
 .ios body.dark {

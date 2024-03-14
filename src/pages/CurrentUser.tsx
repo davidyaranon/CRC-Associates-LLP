@@ -78,7 +78,7 @@ const CurrentUser = () => {
     <IonPage className='ion-page-ios-notch'>
       <IonContent>
 
-        <IonToolbar mode="ios" style={{ height: "5vh", '--background' : '--ion-background-color' }}>
+        <IonToolbar mode="ios" style={{ height: "5vh", '--background': '--ion-background-color' }}>
           <IonButtons slot="start">
             <IonButton
               onClick={handleLogout}
@@ -105,11 +105,15 @@ const CurrentUser = () => {
             </IonButton>
           </IonButtons>
         </IonToolbar>
-        <IonHeader mode="ios" class="ion-no-border" style={{ textAlign: "center", }}>
-          <IonAvatar className="user-avatar-settings">
-            <IonImg src={auth?.photoURL ?? ''}></IonImg>
-          </IonAvatar>
-        </IonHeader>
+        {auth &&
+          <FadeIn>
+            <IonHeader mode="ios" class="ion-no-border" style={{ textAlign: "center", }}>
+              <IonAvatar className="user-avatar-settings">
+                <IonImg src={auth.photoURL ?? ''} alt='Profile Picture'></IonImg>
+              </IonAvatar>
+            </IonHeader>
+          </FadeIn>
+        }
 
         {auth &&
           <FadeIn delay={500}>

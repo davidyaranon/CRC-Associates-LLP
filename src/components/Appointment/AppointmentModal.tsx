@@ -3,12 +3,12 @@ import AppointmentSignature from "./AppointmentSignature";
 import { useRef, useState } from "react";
 import { canDismiss } from "../../utils/canDismiss";
 
-type AppointmentSignatureModalProps = {
+type AppointmentModalProps = {
   presentingElement: HTMLElement | undefined;
 }
 
 
-const AppointmentSignatureModal = (props: AppointmentSignatureModalProps) => {
+const AppointmentModal = (props: AppointmentModalProps) => {
 
   const modalRef = useRef<HTMLIonModalElement | null>(null);
 
@@ -23,10 +23,10 @@ const AppointmentSignatureModal = (props: AppointmentSignatureModalProps) => {
   };
 
   return (
-    <IonModal onDidPresent={handleModalDidPresent} onDidDismiss={handleModalDidDismiss} ref={modalRef} trigger='open-appointment-signature-modal' canDismiss={canDismiss}>
+    <IonModal onDidPresent={handleModalDidPresent} onDidDismiss={handleModalDidDismiss} ref={modalRef} trigger='open-appointment-modal' canDismiss={canDismiss}>
       <IonHeader className='ion-no-border'>
         <IonToolbar className='appointment-modal-content'>
-          <IonTitle className='appointment-modal-title'>Signature</IonTitle>
+          <IonTitle className='appointment-modal-title'>Time Clock</IonTitle>
           <IonButtons>
             <IonButton className='appointment-modal-close-button' onClick={() => { modalRef.current?.dismiss(); }}>
               <p>Close</p>
@@ -45,4 +45,4 @@ const AppointmentSignatureModal = (props: AppointmentSignatureModalProps) => {
 
 };
 
-export default AppointmentSignatureModal;
+export default AppointmentModal;

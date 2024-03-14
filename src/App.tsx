@@ -79,14 +79,14 @@ const RoutingSystem = () => {
             size="large"
           />
         </IonTabButton>
-        <IonTabButton tab="Tab2" href="/map">
+        {/* <IonTabButton tab="Tab2" href="/map">
           <IonIcon
             aria-hidden="true"
             icon={time}
             color={currentTab == "Tab2" ? "primary" : ""}
             size="large"
           />
-        </IonTabButton>
+        </IonTabButton> */}
         <IonTabButton tab="currentUser" href="/currentUser">
           <IonIcon
             aria-hidden="true"

@@ -317,13 +317,12 @@ exports.syncCalendarEventWithDb = functions.https.onCall(async (data, context) =
 
   try {
     const event: CalendarEvent | null = await fetchGoogleCalendarEventGivenEventId(CALENDAR_ID, id);
-
     if (event && event.id) {
       const latLong = await getLatLong(event.location ?? '');
       const additionalInfo = {
         clockInTime: null as (Timestamp | null),
         clockOutTime: null as (Timestamp | null),
-        notes: '' as string,
+        notes: `<p><strong>${event.title}</strong></p>`,
         photoUrls: [] as string[],
         latitude: latLong.latitude as number,
         longitude: latLong.longitude as number

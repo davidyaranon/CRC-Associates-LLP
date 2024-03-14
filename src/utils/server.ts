@@ -258,3 +258,24 @@ export const handleAddImagesToAppointment = async (blobArr: Blob[], uid: string 
   }
 };
 
+
+/**
+ * @function saveNotesToAppointment
+ * @description updates the notes document field at /users/{uid}/appointments/{appointmentId}
+ * 
+ * @param {string} notes
+ * @param {string | undefined} uid
+ * @param {string} appointmentId
+ * @returns {Promise<boolean>} whether the update was successful
+ */
+export const saveNotesToAppointment = async (notes: string, uid: string | undefined, appointmentId: string,) => {
+  try {
+    if (!uid) throw new Error("User is not authenticated");
+    const appointmentRef = doc(db, `users/${uid}/appointments/${appointmentId}`);
+    await updateDoc(appointmentRef, { notes: notes });
+    return true;
+  } catch (err) {
+    console.error("Error saving notes to appointment!", err);
+    return false;
+  }
+};

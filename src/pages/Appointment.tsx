@@ -6,8 +6,8 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { useParams } from "react-router-dom";
 import { Capacitor } from "@capacitor/core";
 import { Camera } from "@capacitor/camera";
-import { IonCard, IonContent, IonLoading, IonPage, useIonToast, IonItem, IonIcon, IonLabel, useIonLoading, IonTextarea, useIonViewWillEnter, IonButton } from "@ionic/react";
-import { cameraOutline, chevronBack, pencilOutline } from "ionicons/icons";
+import { IonCard, IonContent, IonLoading, IonPage, useIonToast, IonItem, IonIcon, IonLabel, useIonLoading, useIonViewWillEnter, IonButton } from "@ionic/react";
+import { cameraOutline, chevronBack, documentTextOutline, timeOutline } from "ionicons/icons";
 import IonPhotoViewer from "@codesyntax/ionic-react-photo-viewer";
 import { Map, Marker, ZoomControl } from "pigeon-maps";
 import { useAuthState } from "react-firebase-hooks/auth";
@@ -15,15 +15,14 @@ import GoBackHeader from "../components/Shared/GoBackHeader";
 import { mapTiler, zoomControlButtonsStyle, zoomControlButtonsStyleDark } from "../utils/mapConfig";
 import FadeIn from "@rcnoverwatcher/react-fade-in-react-18/src/FadeIn";
 import { AppointmentInfo } from "../utils/types";
-import { timeout } from "../utils/timeout";
 import { stripHtml } from "../utils/stripHtml";
 import useAppContext from "../hooks/useContext";
-import FirebaseAuth, { getAppointmentInfo, handleAddImagesToAppointment, syncEventWithDb } from "../utils/server"
+import FirebaseAuth, { getAppointmentInfo, handleAddImagesToAppointment, syncEventWithDb } from "../utils/server";
 import { convertGoogleCalendarDateTimeToDate, convertGoogleCalendarDateTimeToPST } from "../utils/convertGoogleCalendarDateTime";
-import AppointmentSignatureModal from "../components/Appointment/AppointmentSignatureModal";
+import AppointmentModal from "../components/Appointment/AppointmentModal";
 import '../components/Appointment/Appointment.css';
-import ReactQuill from "react-quill";
-import 'react-quill/dist/quill.snow.css';
+import AppointmentNotesModal from "../components/Appointment/AppointmentNotesModal";
+
 
 
 const PHOTO_UPLOAD_LIMIT: number = 3;
@@ -32,10 +31,15 @@ type AppointmentPageParams = {
   appointmentId: string;
 };
 
-const SignatureButton = (
-  <IonButton id='open-appointment-signature-modal'>
-    <IonIcon icon={pencilOutline} />
-  </IonButton>
+const OpenModalButton: React.JSX.Element = (
+  <>
+    <IonButton id='open-notes-modal'>
+      <IonIcon icon={documentTextOutline} />
+    </IonButton>
+    <IonButton id='open-appointment-modal'>
+      <IonIcon icon={timeOutline} />
+    </IonButton>
+  </>
 )
 
 const Appointment = () => {
@@ -47,11 +51,12 @@ const Appointment = () => {
   const [auth, loading] = useAuthState(FirebaseAuth);
   const [presentToast] = useIonToast();
   const [presentLoading, dismissLoading] = useIonLoading();
-  const [pageLoading, setPageLoading] = useState<boolean>(true);
 
+  const [pageLoading, setPageLoading] = useState<boolean>(true);
   const [appointmentInfo, setAppointmentInfo] = useState<AppointmentInfo | null>(null);
   const [photos, setPhotos] = useState<string[]>([]);
   const [notes, setNotes] = useState<string>('');
+  const [originalNotes, setOriginalNotes] = useState<string>(''); // the notes value before the modal is opened
 
   const handleSelectImages = async () => {
     const images = await Camera.pickImages({
@@ -110,7 +115,6 @@ const Appointment = () => {
         const syncResult: boolean = await syncEventWithDb(email, uid, appointmentId);
 
         if (syncResult) {
-          await timeout(1000);
           appointmentData = await getAppointmentInfo(uid, appointmentId);
           if (!appointmentData) {
             throw new Error("Failed to fetch new synced data from database, please try again");
@@ -122,6 +126,7 @@ const Appointment = () => {
       setAppointmentInfo(appointmentData);
       setPhotos(appointmentData.photoUrls);
       setNotes(appointmentData.notes);
+      setOriginalNotes(appointmentData.notes);
     } catch (error) {
       console.error(JSON.stringify(error));
       console.error("Error:", error);
@@ -148,9 +153,10 @@ const Appointment = () => {
   return (
     <IonPage ref={pageRef}>
 
-      <AppointmentSignatureModal presentingElement={pageRef.current} />
+      <AppointmentNotesModal notes={notes} setNotes={setNotes} originalNotes={originalNotes} setOriginalNotes={setOriginalNotes} uid={auth?.uid} appointmentId={appointmentId}  />
+      <AppointmentModal presentingElement={pageRef.current} />
 
-      <GoBackHeader titleStyle={{ marginLeft: '12.5px' }} title={appointmentInfo && "title" in appointmentInfo ? appointmentInfo.title : ''} buttons={SignatureButton} />
+      <GoBackHeader titleStyle={{ marginLeft: '35px' }} title={'Appointment'} buttons={OpenModalButton} />
 
       <IonContent>
         <div style={{ height: '1%' }}></div>
@@ -185,6 +191,7 @@ const Appointment = () => {
               <IonLabel position="stacked">Appointment Details</IonLabel>
               <div style={{ height: "1vh" }} />
               <section className="appointment-details">
+                <p>{appointmentInfo.title}</p>
                 <p>{convertGoogleCalendarDateTimeToDate(appointmentInfo.startDateTime)}, {convertGoogleCalendarDateTimeToPST(appointmentInfo.startDateTime)} - {convertGoogleCalendarDateTimeToPST(appointmentInfo.endDateTime)}</p>
                 <p>{appointmentInfo.location}</p>
                 <br />
@@ -233,18 +240,6 @@ const Appointment = () => {
               </IonCard>
               <div style={{ height: "1vh" }} />
             </IonItem>
-
-            <IonItem
-              style={{ "--background": "var(--ion-background-color)" }}
-              lines="full"
-            >
-              <IonLabel position="stacked">Notes</IonLabel>
-
-              <ReactQuill theme='snow' value={notes} onChange={setNotes} />
-              <br /><br /><br /><br /><br /><br />
-
-            </IonItem>
-
 
           </FadeIn>
         }

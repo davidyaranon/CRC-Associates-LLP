@@ -72,7 +72,7 @@ const AppointmentsList = (props: AppointmentsListProps) => {
     <>
       <IonSegment id='appointment-segment' value={selectedSegment} onIonChange={async (e) => {
         setSelectedSegment(e.detail.value as string);
-        if (e.detail.value === 'Upcoming' && !pastEvents && auth && !loading) {
+        if (e.detail.value === 'Past' && !pastEvents && auth && !loading) {
           await handleGetPastEvents(auth.email, null);
         }
       }}
@@ -154,9 +154,6 @@ const AppointmentsList = (props: AppointmentsListProps) => {
             <IonList>
               {pastEvents !== null ? pastEvents.map((event, index) => (
                 <IonItem key={event.title ?? '' + index} button onClick={() => handleClickOnAppointment(event.id)}>
-                  <IonFab horizontal="end" vertical="top">
-                    {isToday(event.startDateTime) && <span style={{ color: 'var(--ion-color-danger)', fontSize: '0.85rem' }}>Today</span>}
-                  </IonFab>
                   <FadeIn>
                     <div className="event-details">
                       <IonCardTitle className="event-title">
