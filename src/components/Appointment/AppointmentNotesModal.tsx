@@ -60,6 +60,7 @@ const AppointmentNotesModal = (props: AppointmentNotesModalProps) => {
               handler: () => {
                 timeout(350).then(async () => {
                   await handleSaveNotes();
+                  await presentToast({ message: "Notes saved", duration: 3000, color: 'primary' });
                   modalRef.current && modalRef.current.dismiss();
                 });
               },
@@ -77,24 +78,24 @@ const AppointmentNotesModal = (props: AppointmentNotesModalProps) => {
         <IonToolbar className='appointment-modal-content'>
           <IonTitle className='appointment-modal-title'>Notes</IonTitle>
           <IonButtons>
-            <IonButton className='appointment-modal-close-button' onClick={handleCloseNotesModal}>
+            <IonButton onClick={handleCloseNotesModal}>
               <p>Close</p>
             </IonButton>
           </IonButtons>
           <IonButtons slot='end'>
-            <IonButton disabled={props.originalNotes === props.notes} onClick={handleSaveNotes}>
+            <IonButton disabled={props.originalNotes === props.notes} onClick={async () => { await handleSaveNotes(); await presentToast({ message: "Notes saved", duration: 3000, color: 'primary' }); }}>
               Save
             </IonButton>
           </IonButtons>
         </IonToolbar>
       </IonHeader>
-      <IonContent scrollY={false}>
+      <IonContent>
         <br />
         <div style={{ marginLeft: '10px', marginRight: '10px' }}>
           <ReactQuill theme='snow' value={props.notes} onChange={props.setNotes} style={{ height: '67.5vh', borderRadius: '10px' }} />
         </div>
       </IonContent>
-    </IonModal>
+    </IonModal >
   );
 };
 

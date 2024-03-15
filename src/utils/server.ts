@@ -231,7 +231,7 @@ const deleteStorageRef = async (ref: StorageReference) => {
 
 /**
  * @function handleAddImagesToAppointment
- * @description adds photos to Firebase storage at /{uid}/appointments/{appointmentId{
+ * @description adds photos to Firebase storage at /users/{uid}/appointments/{appointmentId}/images
  * and appends to the photoUrls document field in the Firestore DB at /users/{uid}/appointments/{appointmentId}
  * 
  * @param {Blob[]} blobArr the array of photo data
@@ -245,7 +245,7 @@ export const handleAddImagesToAppointment = async (blobArr: Blob[], uid: string 
     for (let i = 0; i < blobArr.length; i++) {
       const blob: Blob = blobArr[i];
       const photoId: string = uuidv4();
-      const imageRef = ref(storage, `${uid}/appointments/${appointmentId}/${photoId}-${Date.now()}-${i}`);
+      const imageRef = ref(storage, `users/${uid}/appointments/${appointmentId}/images/${photoId}-${Date.now()}-${i}`);
       const snapshot = await uploadBytes(imageRef, blob);
       const photoURL = await getDownloadURL(snapshot.ref);
       await updateDoc(appointmentRef, {
@@ -277,5 +277,39 @@ export const saveNotesToAppointment = async (notes: string, uid: string | undefi
   } catch (err) {
     console.error("Error saving notes to appointment!", err);
     return false;
+  }
+};
+
+
+/**
+ * 
+ * @param url 
+ * @param uid 
+ * @param appointmentId 
+ */
+const saveSignatureUrl = async (url: string, uid: string, appointmentId: string) => {
+  const docRef = doc(db, `users/${uid}/appointments/${appointmentId}`);
+  try {
+    await setDoc(docRef, { signatureUrl: url }, { merge: true });
+  } catch (error) {
+    console.error("Error saving signature URL to Firestore: ", error);
+  }
+};
+
+
+/**
+ * 
+ * @param blob 
+ * @param uid 
+ * @param appointmentId 
+ */
+export const uploadSignature = async (blob: Blob, uid: string, appointmentId: string) => {
+  try {
+    const signatureRef = ref(storage, `users/${uid}/appointments/${appointmentId}/signature`);
+    await uploadBytes(signatureRef, blob);
+    const downloadURL = await getDownloadURL(signatureRef);
+    await saveSignatureUrl(downloadURL, uid, appointmentId);
+  } catch (error) {
+    console.error("Error uploading signature: ", error);
   }
 };

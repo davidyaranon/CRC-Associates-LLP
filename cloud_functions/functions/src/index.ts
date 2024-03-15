@@ -325,7 +325,8 @@ exports.syncCalendarEventWithDb = functions.https.onCall(async (data, context) =
         notes: `<p><strong>${event.title}</strong></p>`,
         photoUrls: [] as string[],
         latitude: latLong.latitude as number,
-        longitude: latLong.longitude as number
+        longitude: latLong.longitude as number,
+        signatureUrl: '',
       };
       const eventWithAdditionalInfo = {
         ...event,

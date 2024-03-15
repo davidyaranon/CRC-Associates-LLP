@@ -44,4 +44,5 @@ export type AppointmentInfo = {
   photoUrls: string[];
   startDateTime: string;
   title: string;
+  signatureUrl: string;
 };

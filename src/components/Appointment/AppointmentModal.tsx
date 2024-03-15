@@ -5,7 +5,10 @@ import { canDismiss } from "../../utils/canDismiss";
 
 type AppointmentModalProps = {
   presentingElement: HTMLElement | undefined;
-}
+  appointmentId: string;
+  signatureUrl: string;
+  setSignatureUrl: React.Dispatch<React.SetStateAction<string>>;
+};
 
 
 const AppointmentModal = (props: AppointmentModalProps) => {
@@ -21,6 +24,7 @@ const AppointmentModal = (props: AppointmentModalProps) => {
   const handleModalDidDismiss = () => {
     setModalVisible(false);
   };
+  
 
   return (
     <IonModal onDidPresent={handleModalDidPresent} onDidDismiss={handleModalDidDismiss} ref={modalRef} trigger='open-appointment-modal' canDismiss={canDismiss}>
@@ -28,7 +32,7 @@ const AppointmentModal = (props: AppointmentModalProps) => {
         <IonToolbar className='appointment-modal-content'>
           <IonTitle className='appointment-modal-title'>Time Clock</IonTitle>
           <IonButtons>
-            <IonButton className='appointment-modal-close-button' onClick={() => { modalRef.current?.dismiss(); }}>
+            <IonButton onClick={() => { modalRef.current?.dismiss(); }}>
               <p>Close</p>
             </IonButton>
           </IonButtons>
@@ -37,7 +41,7 @@ const AppointmentModal = (props: AppointmentModalProps) => {
       <IonContent scrollY={false}>
         <br />
         <IonItem style={{ "--background": "var(--ion-background-color)" }} lines="none">
-          <AppointmentSignature modalVisible={modalVisible} width='90vw' height='75vh' />
+          <AppointmentSignature signatureUrl={props.signatureUrl} setSignatureUrl={props.setSignatureUrl} appointmentId={props.appointmentId} modalVisible={modalVisible} width='90vw' height='75vh' />
         </IonItem>
       </IonContent>
     </IonModal>

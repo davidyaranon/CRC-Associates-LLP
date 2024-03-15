@@ -6,8 +6,8 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { useParams } from "react-router-dom";
 import { Capacitor } from "@capacitor/core";
 import { Camera } from "@capacitor/camera";
-import { IonCard, IonContent, IonLoading, IonPage, useIonToast, IonItem, IonIcon, IonLabel, useIonLoading, useIonViewWillEnter, IonButton } from "@ionic/react";
-import { cameraOutline, chevronBack, documentTextOutline, timeOutline } from "ionicons/icons";
+import { IonCard, IonContent, IonLoading, IonPage, useIonToast, IonItem, IonIcon, IonLabel, useIonLoading, useIonViewWillEnter, IonButton, IonFab } from "@ionic/react";
+import { cameraOutline, chevronBack, documentTextOutline, locateOutline, timeOutline } from "ionicons/icons";
 import IonPhotoViewer from "@codesyntax/ionic-react-photo-viewer";
 import { Map, Marker, ZoomControl } from "pigeon-maps";
 import { useAuthState } from "react-firebase-hooks/auth";
@@ -57,6 +57,8 @@ const Appointment = () => {
   const [photos, setPhotos] = useState<string[]>([]);
   const [notes, setNotes] = useState<string>('');
   const [originalNotes, setOriginalNotes] = useState<string>(''); // the notes value before the modal is opened
+  const [center, setCenter] = useState<[number, number]>([0, 0]);
+  const [signatureUrl, setSignatureUrl] = useState<string>('');
 
   const handleSelectImages = async () => {
     const images = await Camera.pickImages({
@@ -127,6 +129,8 @@ const Appointment = () => {
       setPhotos(appointmentData.photoUrls);
       setNotes(appointmentData.notes);
       setOriginalNotes(appointmentData.notes);
+      setCenter([appointmentData.latitude, appointmentData.longitude]);
+      setSignatureUrl(appointmentData.signatureUrl);
     } catch (error) {
       console.error(JSON.stringify(error));
       console.error("Error:", error);
@@ -153,8 +157,8 @@ const Appointment = () => {
   return (
     <IonPage ref={pageRef}>
 
-      <AppointmentNotesModal notes={notes} setNotes={setNotes} originalNotes={originalNotes} setOriginalNotes={setOriginalNotes} uid={auth?.uid} appointmentId={appointmentId}  />
-      <AppointmentModal presentingElement={pageRef.current} />
+      <AppointmentNotesModal notes={notes} setNotes={setNotes} originalNotes={originalNotes} setOriginalNotes={setOriginalNotes} uid={auth?.uid} appointmentId={appointmentId} />
+      <AppointmentModal signatureUrl={signatureUrl} setSignatureUrl={setSignatureUrl} appointmentId={appointmentId} presentingElement={pageRef.current} />
 
       <GoBackHeader titleStyle={{ marginLeft: '35px' }} title={'Appointment'} buttons={OpenModalButton} />
 
@@ -169,8 +173,16 @@ const Appointment = () => {
               <section className='map-container'>
                 <Map
                   provider={(x, y, z, dpr) => mapTiler(context.darkMode, x, y, z, dpr)}
-                  center={[appointmentInfo.latitude, appointmentInfo.longitude]}
+                  center={center}
+                  onBoundsChanged={({ center, zoom }) => {
+                    setCenter(center);
+                  }}
                 >
+                  <IonFab vertical='bottom' horizontal='start'>
+                    <IonButton color={context.darkMode ? 'dark' : 'light'} size='small' onClick={() => setCenter([appointmentInfo.latitude, appointmentInfo.longitude])}>
+                      <IonIcon icon={locateOutline}></IonIcon>
+                    </IonButton>
+                  </IonFab>
                   <ZoomControl buttonStyle={context.darkMode ? zoomControlButtonsStyleDark : zoomControlButtonsStyle}></ZoomControl>
                   <Marker onClick={
                     () => handleClickOnMarker(appointmentInfo.latitude.toString(), appointmentInfo.longitude.toString(), appointmentInfo.title)

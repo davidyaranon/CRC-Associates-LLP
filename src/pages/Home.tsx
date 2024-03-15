@@ -58,7 +58,7 @@ const Home: React.FC = () => {
       <IonHeader>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingLeft: '15px' }}>
           <IonCardTitle>Appointments</IonCardTitle>
-          <img onClick={() => contentRef && contentRef.current && contentRef.current.scrollToTop(1000)} src={CRC_Logo_v1} style={{ width: '75px', height: 'auto', marginRight: '7.5px', marginBottom: '1px' }} />
+          <img role='button' onClick={() => contentRef && contentRef.current && contentRef.current.scrollToTop(1000)} src={CRC_Logo_v1} style={{ width: '75px', height: 'auto', marginRight: '7.5px', marginBottom: '1px' }} />
         </div>
       </IonHeader>
 
